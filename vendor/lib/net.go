@@ -29,7 +29,7 @@ func StartServer(port int) {
 	addr := ":" + strconv.Itoa(port)
 	internal := GetIntranetIP()
 	if internal == "" {
-		log.Println("can not get internal ip.")
+		log.Println("Can not get internal ip.")
 	} else {
 		url := "http://" + internal + addr
 		log.Println("Listening: " + url)

@@ -52,13 +52,17 @@ func startResHandler() {
 // 是否需要构建
 var needBuild = false
 
+// 已构建次数
+var buildCount = 0
+
 // 构建处理器
 func startBuildHandler() {
 	go func() {
 		for {
 			if needBuild {
 				needBuild = false
-				log.Println("Building...")
+				buildCount++
+				log.Println("Building...", buildCount)
 				Build()
 				log.Println("Build done")
 			}
