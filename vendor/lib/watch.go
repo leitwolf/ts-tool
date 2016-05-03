@@ -155,6 +155,9 @@ func handleWatch(event fsnotify.Event) {
 
 // Watch 开始监听
 func Watch() {
+	// 先读取配置文件
+	ReadConfig()
+
 	w, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Printf("Watch new error: %v\n", err)
@@ -185,6 +188,7 @@ func Watch() {
 	if Config.ResourceDir != "" {
 		list = append(list, Config.ResourceDir)
 	}
+	// log.Printf("%v\n", list)
 	var allList []string
 	for i := 0; i < len(list); i++ {
 		item := list[i]
