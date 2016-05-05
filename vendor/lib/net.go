@@ -46,6 +46,7 @@ func ServerHelper(port int) {
 	done := make(chan bool)
 	Watch()
 	defer watcher.Close()
+	HandleImages()
 	StartServer(port)
 	// 阻塞退出（好像没什么用，web已经阻塞了）
 	<-done
