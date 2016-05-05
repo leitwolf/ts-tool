@@ -65,9 +65,25 @@ func startBuildHandler() {
 				log.Println("Building...", buildCount)
 				Build()
 				log.Println("Build done")
+				startTick()
 			}
 			time.Sleep(time.Second * 1)
 		}
+	}()
+}
+
+// 计时器，每隔一分钟，如果没有动静则会构建一次
+var timer *time.Timer
+
+func startTick() {
+	if timer != nil {
+		timer.Stop()
+	}
+	timer = time.NewTimer(time.Second * 60)
+	go func() {
+		<-timer.C
+		needBuild = true
+		log.Println("Building in period")
 	}()
 }
 
