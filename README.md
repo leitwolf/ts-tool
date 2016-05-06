@@ -73,7 +73,7 @@ ts-tool -p
 ```
 * `target` 编译参数，默认 `es5` 
 * `jsDir` 编译ts文件到目录，默认 `js` 
-* `resourceDir` 需要处理的资源目录，此功能是把资源文件列到src/Res.ts里，以便程序调用，默认空
+* `resourceDir` 需要处理的资源目录，此功能是把资源文件列到src/R.ts里，以便程序调用，默认空
 * `modulesDir` 引用模块所在文件夹，模块有三个文件m.d.ts,m.js,m.min.js，默认空
 * `publish` 发布相关参数
 * ----`dir` 发布到的目录，默认`build`
