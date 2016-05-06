@@ -17,10 +17,13 @@ type PublishConfig struct {
 }
 
 // TstoolConfig 配置文件结构
+// ModulesDir 为模块文件夹，每个模块由三个文件组成:模块名m，文件m.d.ts, m.js, m.min.js
 type TstoolConfig struct {
-	Target      string        `json:"target"`
-	JsDir       string        `json:"jsDir"`
-	ResourceDir string        `json:"resourceDir"`
+	Target      string `json:"target"`
+	OutJsDir    string `json:"outJsDir"`
+	ResourceDir string `json:"resourceDir"`
+	ModulesDir  string `json:"modulesDir"`
+	Modules     []string
 	Publish     PublishConfig `json:"publish"`
 	Htmls       []string      `json:"htmls"`
 	Files       []string      `json:"files"`
@@ -40,8 +43,10 @@ func intConfig() {
 	}
 	Config = TstoolConfig{
 		Target:      "es5",
-		JsDir:       "js",
+		OutJsDir:    "js",
 		ResourceDir: "",
+		ModulesDir:  "",
+		Modules:     []string{},
 		Publish:     publish,
 		Htmls:       []string{"index.html"},
 	}
@@ -59,6 +64,18 @@ func ReadConfig() bool {
 	if err != nil {
 		log.Println("Parse config file error:", err)
 		return false
+	}
+	// 处理模块
+	if Config.ModulesDir != "" {
+		files, err := ioutil.ReadDir(Config.ModulesDir)
+		if err != nil {
+			log.Println("[Read Module dir error]", err)
+		}
+		for _, fi := range files {
+			if fi.IsDir() {
+				Config.Modules = append(Config.Modules, fi.Name())
+			}
+		}
 	}
 	// log.Printf("%v", Config)
 	return true

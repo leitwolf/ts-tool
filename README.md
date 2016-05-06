@@ -53,6 +53,7 @@ ts-tool -p
     "target": "es5",
     "jsDir": "js",
     "resourceDir": "images",
+    "modulesDir": "",
     "publish": {
         "dir": "build",
         "minJs": "main.min.js",
@@ -73,10 +74,11 @@ ts-tool -p
 * `target` 编译参数，默认 `es5` 
 * `jsDir` 编译ts文件到目录，默认 `js` 
 * `resourceDir` 需要处理的资源目录，此功能是把资源文件列到src/Res.ts里，以便程序调用，默认空
+* `modulesDir` 引用模块所在文件夹，模块有三个文件m.d.ts,m.js,m.min.js，默认空
 * `publish` 发布相关参数
 * ----`dir` 发布到的目录，默认`build`
 * ----`minJs` 压缩成单一js文件的名称，默认`main.min.js`
 * ----`copyFiles` 发布时直接拷贝的文件，默认空
 * `htmls` 构建时需要更改的html主文件，在html的内容`<!-- start`和`<!-- end`之间加入编译好的js文件，默认`index.html`
-* `files` 需要编译的ts文件列表，在`src`目录中，要注意文件顺序，默认空
+* `files` 需要编译的ts文件列表，在`src`目录中，要注意文件顺序，空则编译所有ts文件，默认空
 

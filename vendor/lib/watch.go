@@ -162,6 +162,9 @@ func handleWatch(event fsnotify.Event) {
 	if strings.Contains(path, configFilename) {
 		// 配置文件改变
 		needBuild = true
+	} else if Config.ModulesDir != "" && strings.Contains(path, Config.ModulesDir) {
+		// 模块改变
+		needBuild = true
 	} else if event.Op&fsnotify.Create == fsnotify.Create {
 		watchCreate(path)
 	} else if event.Op&fsnotify.Remove == fsnotify.Remove {
@@ -207,6 +210,9 @@ func Watch() {
 	list := []string{"src"}
 	if Config.ResourceDir != "" {
 		list = append(list, Config.ResourceDir)
+	}
+	if Config.ModulesDir != "" {
+		list = append(list, Config.ModulesDir)
 	}
 	// log.Printf("%v\n", list)
 	var allList []string

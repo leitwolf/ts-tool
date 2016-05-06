@@ -41,6 +41,14 @@ func copyFiles() {
 		destPath := Config.Publish.Dir + "/" + srcPath
 		copyFile(srcPath, destPath)
 	}
+	// 复制模块
+	if len(Config.Modules) > 0 {
+		for _, m := range Config.Modules {
+			srcPath := Config.ModulesDir + "/" + m + "/" + m + ".js"
+			destPath := Config.Publish.Dir + "/" + Config.OutJsDir + "/modules/" + m + ".min.js"
+			copyFile(srcPath, destPath)
+		}
+	}
 }
 
 // 复制文件
@@ -88,6 +96,6 @@ func Publish() {
 	copyFiles()
 	buildCommand(true)
 	buildHtmls(true)
-	var destJs = Config.Publish.Dir + "/" + Config.JsDir + "/" + Config.Publish.MinJs
+	var destJs = Config.Publish.Dir + "/" + Config.OutJsDir + "/" + Config.Publish.MinJs
 	minifyJs(SingleJs, destJs)
 }
