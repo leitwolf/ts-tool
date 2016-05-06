@@ -15,7 +15,7 @@ import (
 const template = `/**
  * DO NOT edit
  */
-class Res {
+class R {
     
 {{content}} 
     constructor() {
@@ -26,17 +26,17 @@ class Res {
 const lineTmpl = "    public static {{name}} : string = \"{{path}}\";\r\n"
 
 // 保存的位置
-const savePath = "src/Res.ts"
-
-// 图片目录
-var imagePath = "images/"
+const savePath = "src/R.ts"
 
 //
 // HandleImages 处理资源
 // images/select/box2.png 名字为 select_box2
 //
 func HandleImages() {
-	path := imagePath
+	if Config.ResourceDir == "" {
+		return
+	}
+	path := Config.ResourceDir
 	content := ""
 	l := len(path)
 	err := filepath.Walk(path, func(path1 string, f os.FileInfo, err1 error) error {

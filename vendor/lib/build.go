@@ -135,6 +135,7 @@ func Build() {
 	if !ReadConfig() {
 		return
 	}
+	HandleImages()
 	buildCommand(false)
 	buildHtmls(false)
 }
