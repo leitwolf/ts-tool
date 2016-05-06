@@ -55,6 +55,9 @@ func HandleImages() {
 		// }
 		name := path1[l:dotIndex]
 		name = strings.Replace(name, "/", "_", -1)
+		if name[0] == '_' {
+			name = name[1:]
+		}
 		line := strings.Replace(lineTmpl, "{{name}}", name, -1)
 		line = strings.Replace(line, "{{path}}", path1, -1)
 		content += line
