@@ -44,9 +44,16 @@ func copyFiles() {
 	// 复制模块
 	if len(Config.Modules) > 0 {
 		for _, m := range Config.Modules {
-			srcPath := Config.ModulesDir + "/" + m + "/" + m + ".js"
+			srcPath := Config.ModulesDir + "/" + m + "/" + m + ".min.js"
 			destPath := Config.Publish.Dir + "/" + Config.OutJsDir + "/modules/" + m + ".min.js"
 			copyFile(srcPath, destPath)
+			// 有可能有 web.min.js
+			webPath := Config.ModulesDir + "/" + m + "/" + m + ".web.min.js"
+			_, err := os.Stat(webPath)
+			if err == nil {
+				destPath2 := Config.Publish.Dir + "/" + Config.OutJsDir + "/modules/" + m + ".web.min.js"
+				copyFile(webPath, destPath2)
+			}
 		}
 	}
 }

@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -64,9 +65,22 @@ func buildHtmls(isPublish bool) {
 				// 发布版的要放模块到 js/modules/ 下
 				str := Config.OutJsDir + "/modules/" + m + ".min.js"
 				moduleJs += "    <script src=\"" + str + "\"></script>\n"
+				// egret中有可能有 m.web.min.js
+				webPath := Config.ModulesDir + "/" + m + "/" + m + ".web.min.js"
+				_, err := os.Stat(webPath)
+				if err == nil {
+					str = Config.OutJsDir + "/modules/" + m + ".web.min.js"
+					moduleJs += "    <script src=\"" + str + "\"></script>\n"
+				}
 			} else {
 				str := Config.ModulesDir + "/" + m + "/" + m + ".js"
 				moduleJs += "    <script src=\"" + str + "\"></script>\n"
+				// egret中有可能有 m.web.js
+				webPath := Config.ModulesDir + "/" + m + "/" + m + ".web.js"
+				_, err := os.Stat(webPath)
+				if err == nil {
+					moduleJs += "    <script src=\"" + webPath + "\"></script>\n"
+				}
 			}
 		}
 	}
@@ -75,11 +89,30 @@ func buildHtmls(isPublish bool) {
 		str := Config.OutJsDir + "/" + Config.Publish.MinJs
 		js += "    <script src=\"" + str + "\"></script>\n"
 	} else {
-		for i := 0; i < len(Config.Files); i++ {
-			str := Config.Files[i]
-			str = strings.Replace(str, ".ts", ".js", -1)
-			str = Config.OutJsDir + "/" + str
-			js += "    <script src=\"" + str + "\"></script>\n"
+		if len(Config.Files) > 0 {
+			for i := 0; i < len(Config.Files); i++ {
+				str := Config.Files[i]
+				str = strings.Replace(str, ".ts", ".js", -1)
+				str = Config.OutJsDir + "/" + str
+				js += "    <script src=\"" + str + "\"></script>\n"
+			}
+		} else {
+			// 全部
+			filepath.Walk("src", func(path1 string, f os.FileInfo, err1 error) error {
+				if f == nil {
+					return err1
+				}
+				if f.IsDir() {
+					return nil
+				}
+				if strings.HasSuffix(path1, ".ts") {
+					path1 = strings.Replace(path1, "\\", "/", -1)
+					str := strings.Replace(path1, ".ts", ".js", -1)
+					str = strings.Replace(str, "src", Config.OutJsDir, 1)
+					js += "    <script src=\"" + str + "\"></script>\n"
+				}
+				return nil
+			})
 		}
 	}
 	for i := 0; i < len(Config.Htmls); i++ {
@@ -131,11 +164,13 @@ func handleHTML(filename string, moduleJs string, js string) {
 }
 
 // Build 编译生成
-func Build() {
+func Build(handleImages bool) {
 	if !ReadConfig() {
 		return
 	}
-	HandleImages()
+	if handleImages {
+		HandleImages()
+	}
 	buildCommand(false)
 	buildHtmls(false)
 }

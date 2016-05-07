@@ -32,7 +32,7 @@ func main() {
 			lib.ServerHelper(*port1)
 		}
 	} else if build {
-		lib.Build()
+		lib.Build(true)
 	} else if publish {
 		lib.Publish()
 	} else {

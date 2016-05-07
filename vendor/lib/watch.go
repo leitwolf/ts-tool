@@ -63,7 +63,7 @@ func startBuildHandler() {
 				needBuild = false
 				buildCount++
 				log.Println("Building...", buildCount)
-				Build()
+				Build(false)
 				log.Println("Build done")
 				startTick()
 			}
@@ -195,7 +195,7 @@ func Watch() {
 			select {
 			case event := <-watcher.Events:
 				if event.Name != "" {
-					// log.Println("Watch event:", event)
+					log.Println("Watch event:", event)
 					handleWatch(event)
 				}
 			case err := <-watcher.Errors:
