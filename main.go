@@ -4,6 +4,7 @@ import (
 	"flag"
 	"lib"
 	"log"
+	"time"
 )
 
 // web服务默认监听端口
@@ -22,6 +23,9 @@ func main() {
 	var publish bool
 	flag.BoolVar(&publish, "publish", false, "Publish")
 	flag.BoolVar(&publish, "p", false, "Publish [shorted]")
+	var datetime bool
+	flag.BoolVar(&datetime, "datetime", false, "Append datetime for Publish")
+	flag.BoolVar(&datetime, "dt", false, "Append datetime for Publish [shorted]")
 
 	flag.Parse()
 
@@ -34,6 +38,12 @@ func main() {
 	} else if build {
 		lib.Build(true)
 	} else if publish {
+		if !lib.ReadConfig() {
+			return
+		}
+		if datetime {
+			lib.Config.Publish.Dir += time.Now().Format("20060102150405")
+		}
 		lib.Publish()
 	} else {
 		flag.PrintDefaults()

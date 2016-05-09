@@ -94,10 +94,8 @@ func minifyJs(inputFile string, outFile string) bool {
 }
 
 // Publish 发布
+// @param datetime 是否在目录后面加上当前时间
 func Publish() {
-	if !ReadConfig() {
-		return
-	}
 	// 先删除文件
 	os.RemoveAll(Config.Publish.Dir)
 	copyFiles()

@@ -20,6 +20,10 @@ Usage of ts-tool:
   -b    Build [shorted]
   -build
         Build
+  -datetime
+        Append datetime for Publish
+  -dt
+        Append datetime for Publish [shorted]
   -p    Publish [shorted]
   -port int
         Web server port >1024 (default 3500)
@@ -45,6 +49,7 @@ ts-tool -b
 ts-tool -p
 ```
 > 其中port是跟startserver一起的
+> datetime跟publish一起同，意思为是否在发布的目录名后面加上日期时间
 
 # 配置文件
 
@@ -79,6 +84,6 @@ ts-tool -p
 * ----`dir` 发布到的目录，默认`build`
 * ----`minJs` 压缩成单一js文件的名称，默认`main.min.js`
 * ----`copyFiles` 发布时直接拷贝的文件，默认空
-* `htmls` 构建时需要更改的html主文件，在html的内容`<!-- start`和`<!-- end`之间加入编译好的js文件，默认`index.html`
+* `htmls` 构建时需要更改的html主文件，在html的内容`<!--modules_files_start-->`和`<!--modules_files_end-->`之间加入模块js文件，在`<!--game_files_start-->`和`<!--game_files_end-->`之间加入编译好的js文件，默认`index.html`
 * `files` 需要编译的ts文件列表，在`src`目录中，要注意文件顺序，空则编译所有ts文件，默认空
 
