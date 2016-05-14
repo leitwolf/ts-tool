@@ -18,20 +18,31 @@ func copyFiles() {
 	list := Config.Publish.CopyFiles
 	for i := 0; i < len(list); i++ {
 		path := list[i]
-		err := filepath.Walk(path, func(path1 string, f os.FileInfo, err1 error) error {
-			if f == nil {
-				return err1
-			}
-			if f.IsDir() {
+		// 检测是否是文件
+		file, err := os.Stat(path)
+		if err != nil {
+			continue
+		}
+		if file.IsDir() {
+			err := filepath.Walk(path, func(path1 string, f os.FileInfo, err1 error) error {
+				if f == nil {
+					return err1
+				}
+				if f.IsDir() {
+					return nil
+				}
+				srcPath := strings.Replace(path1, "\\", "/", -1)
+				destPath := Config.Publish.Dir + "/" + srcPath
+				copyFile(srcPath, destPath)
 				return nil
+			})
+			if err != nil {
+				log.Printf("[copyFile] error %v\n", err)
 			}
-			srcPath := strings.Replace(path1, "\\", "/", -1)
+		} else {
+			srcPath := path
 			destPath := Config.Publish.Dir + "/" + srcPath
 			copyFile(srcPath, destPath)
-			return nil
-		})
-		if err != nil {
-			log.Printf("filepath.Walk() return %v\n", err)
 		}
 	}
 	// 复制html
