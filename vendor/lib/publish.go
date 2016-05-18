@@ -41,7 +41,7 @@ func copyFiles() {
 			}
 		} else {
 			srcPath := path
-			destPath := Config.Publish.Dir + "/" + srcPath
+			destPath := Config.Publish.Dir + "/" + file.Name()
 			copyFile(srcPath, destPath)
 		}
 	}
