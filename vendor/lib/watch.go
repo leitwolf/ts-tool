@@ -94,13 +94,10 @@ func watchCreate(path string) {
 		return
 	}
 	srcPath := "src"
-	resPath := Config.ResourceDir
+	// resPath := Config.ResourceDir
 	if file.IsDir() {
 		// 建立目录
 		addWatch(path)
-	} else if resPath != "" && strings.HasPrefix(path, resPath) {
-		// 在资源目录中建立文件
-		needHandleRes = true
 	} else if strings.HasPrefix(path, srcPath) {
 		// 在源码目录中建立文件
 		needBuild = true
@@ -114,13 +111,9 @@ func watchRemove(path string) {
 		return
 	}
 	srcPath := "src"
-	resPath := Config.ResourceDir
 	if file.IsDir() {
 		// 删除目录
 		removeWatch(path)
-	} else if resPath != "" && strings.HasPrefix(path, resPath) {
-		// 在资源目录中删除文件
-		needHandleRes = true
 	} else if strings.HasPrefix(path, srcPath) {
 		// 在源码目录中删除文件
 		needBuild = true
@@ -134,13 +127,9 @@ func watchRename(path string) {
 		return
 	}
 	srcPath := "src"
-	resPath := Config.ResourceDir
 	if file.IsDir() {
 		// 修改目录名称
 		addWatch(path)
-	} else if resPath != "" && strings.HasPrefix(path, resPath) {
-		// 在资源目录中修改文件名
-		needHandleRes = true
 	} else if strings.HasPrefix(path, srcPath) {
 		// 在源码目录中修改文件名
 		needBuild = true
@@ -165,6 +154,9 @@ func handleWatch(event fsnotify.Event) {
 	} else if Config.ModulesDir != "" && strings.Contains(path, Config.ModulesDir) {
 		// 模块改变
 		needBuild = true
+	} else if Config.ResourceDir != "" && strings.HasPrefix(path, Config.ResourceDir) {
+		// 素材改变
+		needHandleRes = true
 	} else if event.Op&fsnotify.Create == fsnotify.Create {
 		watchCreate(path)
 	} else if event.Op&fsnotify.Remove == fsnotify.Remove {
