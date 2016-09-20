@@ -48,12 +48,13 @@ func HandleImages() {
 		}
 		path1 = strings.Replace(path1, "\\", "/", -1)
 		dotIndex := strings.LastIndex(path1, ".")
-		// 只有图片才处理
-		// ext := path1[dotIndex:]
-		// if ext != ".png" && ext != ".jpg" {
-		// 	return nil
-		// }
 		name := path1[l:dotIndex]
+		// 非图片加后缀
+		ext := strings.ToLower(path1[dotIndex:])
+		if ext != ".png" && ext != ".jpg" && ext != ".bmp" {
+			ext = strings.Replace(ext, ".", "_", -1)
+			name += ext
+		}
 		name = strings.Replace(name, "/", "_", -1)
 		if name[0] == '_' {
 			name = name[1:]
