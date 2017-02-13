@@ -10,7 +10,7 @@ import (
 // web服务默认监听端口
 var port = 3500
 
-func main() {
+func run() {
 	var startserver bool
 	flag.BoolVar(&startserver, "startserver", false, "Start server")
 	flag.BoolVar(&startserver, "s", false, "Start server [shorted]")
@@ -48,4 +48,8 @@ func main() {
 	} else {
 		flag.PrintDefaults()
 	}
+}
+
+func main() {
+	run()
 }
