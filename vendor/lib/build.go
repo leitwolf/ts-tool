@@ -8,10 +8,13 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // SingleJs 只导出到一个单个文件
@@ -86,8 +89,11 @@ func buildHtmls(isPublish bool) {
 	}
 	var js string
 	if isPublish {
+		// 加上随机数，防缓存
+		r := rand.New(rand.NewSource(time.Now().UnixNano()))
+		ran := r.Intn(100000)
 		str := Config.OutJsDir + "/" + Config.Publish.MinJs
-		js += "    <script src=\"" + str + "\"></script>\n"
+		js += "    <script src=\"" + str + "?v=" + strconv.Itoa(ran) + "\"></script>\n"
 	} else {
 		if len(Config.Files) > 0 {
 			for i := 0; i < len(Config.Files); i++ {
