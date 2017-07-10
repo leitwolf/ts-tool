@@ -1,6 +1,12 @@
-package lib
+package common
+
+/*
+监视文件变化及处理
+*/
 
 import (
+	"conf"
+	"handler"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,38 +16,46 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
-// 监听器实例
-var watcher *fsnotify.Watcher
+// Watch 监视器
+type Watch struct {
+	// 监听器实例
+	watcher *fsnotify.Watcher
+	// 是否需要处理资源
+	needHandleRes bool
+	// 是否需要构建
+	needBuild bool
+	// 已构建次数
+	buildCount int
+	// 计时器，每隔一分钟，如果没有动静则会构建一次
+	timer *time.Timer
+}
 
 // 添加监听
-func addWatch(path string) {
+func (w *Watch) addWatch(path string) {
 	log.Println("Watching path: ", path)
-	err := watcher.Add(path)
+	err := w.watcher.Add(path)
 	if err != nil {
 		log.Printf("Watch "+path+" error: %v\n", err)
 	}
 }
 
 // 删除监听
-func removeWatch(path string) {
+func (w *Watch) removeWatch(path string) {
 	log.Println("Remove watch path: ", path)
-	err := watcher.Remove(path)
+	err := w.watcher.Remove(path)
 	if err != nil {
 		// log.Printf("Remove watch "+path+" error: %v\n", err)
 	}
 }
 
-// 是否需要处理资源
-var needHandleRes = false
-
 // 资源处理器
-func startResHandler() {
+func (w *Watch) startResHandler() {
 	go func() {
 		for {
-			if needHandleRes {
-				needHandleRes = false
+			if w.needHandleRes {
+				w.needHandleRes = false
 				log.Println("Handling res...")
-				HandleImages()
+				handler.GRes.Handle()
 				log.Println("Handle res done")
 			}
 			time.Sleep(time.Second * 1)
@@ -49,148 +63,135 @@ func startResHandler() {
 	}()
 }
 
-// 是否需要构建
-var needBuild = false
-
-// 已构建次数
-var buildCount = 0
-
 // 构建处理器
-func startBuildHandler() {
+func (w *Watch) startBuildHandler() {
 	go func() {
 		for {
-			if needBuild {
-				needBuild = false
-				buildCount++
-				log.Println("Building...", buildCount)
-				Build(false)
+			if w.needBuild {
+				w.needBuild = false
+				w.buildCount++
+				log.Println("Building...", w.buildCount)
+				handler.GBuild.Build()
 				log.Println("Build done")
-				startTick()
+				w.startTick()
 			}
 			time.Sleep(time.Second * 1)
 		}
 	}()
 }
 
-// 计时器，每隔一分钟，如果没有动静则会构建一次
-var timer *time.Timer
-
-func startTick() {
-	if timer != nil {
-		timer.Stop()
+// 60秒执行一次
+func (w *Watch) startTick() {
+	if w.timer != nil {
+		w.timer.Stop()
 	}
-	timer = time.NewTimer(time.Second * 60)
+	w.timer = time.NewTimer(time.Second * 60)
 	go func() {
-		<-timer.C
-		needBuild = true
+		<-w.timer.C
+		w.needBuild = true
 		log.Println("Building in period")
 	}()
 }
 
 // 处理新建监听
-func watchCreate(path string) {
+func (w *Watch) watchCreate(path string) {
 	file, err := os.Stat(path)
 	if err != nil {
 		return
 	}
-	srcPath := "src"
+	srcPath := conf.Conf.SrcDir
 	// resPath := Config.ResourceDir
 	if file.IsDir() {
 		// 建立目录
-		addWatch(path)
+		w.addWatch(path)
 	} else if strings.HasPrefix(path, srcPath) {
 		// 在源码目录中建立文件
-		needBuild = true
+		w.needBuild = true
 	}
 }
 
 // 处理删除监听
-func watchRemove(path string) {
+func (w *Watch) watchRemove(path string) {
 	file, err := os.Stat(path)
 	if err != nil {
 		return
 	}
-	srcPath := "src"
+	srcPath := conf.Conf.SrcDir
 	if file.IsDir() {
 		// 删除目录
-		removeWatch(path)
+		w.removeWatch(path)
 	} else if strings.HasPrefix(path, srcPath) {
 		// 在源码目录中删除文件
-		needBuild = true
+		w.needBuild = true
 	}
 }
 
 // 处理重命名监听
-func watchRename(path string) {
+func (w *Watch) watchRename(path string) {
 	file, err := os.Stat(path)
 	if err != nil {
 		return
 	}
-	srcPath := "src"
+	srcPath := conf.Conf.SrcDir
 	if file.IsDir() {
 		// 修改目录名称
-		addWatch(path)
+		w.addWatch(path)
 	} else if strings.HasPrefix(path, srcPath) {
 		// 在源码目录中修改文件名
-		needBuild = true
+		w.needBuild = true
 	}
 }
 
 // 处理修改监听
-func watchWrite(path string) {
-	srcPath := "src"
+func (w *Watch) watchWrite(path string) {
+	srcPath := conf.Conf.SrcDir
 	if strings.HasPrefix(path, srcPath) {
 		// 源码修改
-		needBuild = true
+		w.needBuild = true
 	}
 }
 
-// 处理监听
-func handleWatch(event fsnotify.Event) {
+// 处理监听到的变化
+func (w *Watch) handleWatch(event fsnotify.Event) {
 	path := strings.Replace(event.Name, "\\", "/", -1)
-	if strings.Contains(path, configFilename) {
+	if strings.Contains(path, conf.ConfigFilename) {
 		// 配置文件改变
-		needBuild = true
-	} else if Config.ModulesDir != "" && strings.Contains(path, Config.ModulesDir) {
-		// 模块改变
-		needBuild = true
-	} else if Config.ResourceDir != "" && strings.HasPrefix(path, Config.ResourceDir) {
+		w.needBuild = true
+	} else if conf.Conf.Res.Dir != "" && strings.HasPrefix(path, conf.Conf.Res.Dir) {
 		// 素材改变
-		needHandleRes = true
+		w.needHandleRes = true
 	} else if event.Op&fsnotify.Create == fsnotify.Create {
-		watchCreate(path)
+		w.watchCreate(path)
 	} else if event.Op&fsnotify.Remove == fsnotify.Remove {
-		watchRemove(path)
+		w.watchRemove(path)
 	} else if event.Op&fsnotify.Rename == fsnotify.Rename {
-		watchRename(path)
+		w.watchRename(path)
 	} else if event.Op&fsnotify.Write == fsnotify.Write {
-		watchWrite(path)
+		w.watchWrite(path)
 	}
 }
 
 // Watch 开始监听
-func Watch() {
-	// 先读取配置文件
-	ReadConfig()
-
-	w, err := fsnotify.NewWatcher()
+func (w *Watch) Watch() {
+	nw, err := fsnotify.NewWatcher()
 	if err != nil {
 		log.Printf("Watch new error: %v\n", err)
 		return
 	}
-	watcher = w
+	w.watcher = nw
 	// defer watcher.Close()
 
 	// done := make(chan bool)
+	// 开启一个 goroutine 来处理事件
 	go func() {
 		for {
 			select {
-			case event := <-watcher.Events:
+			case event := <-w.watcher.Events:
 				if event.Name != "" {
 					// log.Println("Watch event:", event)
-					handleWatch(event)
+					w.handleWatch(event)
 				}
-			case err := <-watcher.Errors:
+			case err := <-w.watcher.Errors:
 				if err != nil {
 					log.Printf("Watch error: %v\n", err)
 				}
@@ -199,12 +200,9 @@ func Watch() {
 	}()
 
 	// 监听的目录列表，包含子目录
-	list := []string{"src"}
-	if Config.ResourceDir != "" {
-		list = append(list, Config.ResourceDir)
-	}
-	if Config.ModulesDir != "" {
-		list = append(list, Config.ModulesDir)
+	list := []string{conf.Conf.SrcDir}
+	if conf.Conf.Res.Dir != "" {
+		list = append(list, conf.Conf.Res.Dir)
 	}
 	// log.Printf("%v\n", list)
 	var allList []string
@@ -222,14 +220,16 @@ func Watch() {
 		})
 	}
 	// 添加配置文件监听
-	allList = append(allList, configFilename)
+	allList = append(allList, conf.ConfigFilename)
 	for i := 0; i < len(allList); i++ {
 		item := allList[i]
-		addWatch(item)
+		w.addWatch(item)
 	}
 	// 开启各个处理器
-	startBuildHandler()
-	startResHandler()
-
+	w.startResHandler()
+	w.startBuildHandler()
 	// <-done
 }
+
+// GWatch Watch 单例
+var GWatch = &Watch{needBuild: true, needHandleRes: true, buildCount: 0}

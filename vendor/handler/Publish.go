@@ -1,6 +1,11 @@
-package lib
+package handler
+
+/*
+发布模块
+*/
 
 import (
+	"conf"
 	"io"
 	"io/ioutil"
 	"log"
@@ -8,14 +13,21 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
+
+	"strconv"
 
 	"github.com/tdewolff/minify"
 	"github.com/tdewolff/minify/js"
 )
 
+// Publish 发布模块
+type Publish struct {
+}
+
 // 复制文件
-func copyFiles() {
-	list := Config.Publish.CopyFiles
+func (p *Publish) copyFiles() {
+	list := conf.Conf.Publish.CopyList
 	for i := 0; i < len(list); i++ {
 		path := list[i]
 		// 检测是否是文件
@@ -32,8 +44,8 @@ func copyFiles() {
 					return nil
 				}
 				srcPath := strings.Replace(path1, "\\", "/", -1)
-				destPath := Config.Publish.Dir + "/" + srcPath
-				copyFile(srcPath, destPath)
+				destPath := conf.Conf.Publish.Dir + "/" + srcPath
+				p.copyFile(srcPath, destPath)
 				return nil
 			})
 			if err != nil {
@@ -41,36 +53,33 @@ func copyFiles() {
 			}
 		} else {
 			srcPath := path
-			destPath := Config.Publish.Dir + "/" + file.Name()
-			copyFile(srcPath, destPath)
+			destPath := conf.Conf.Publish.Dir + "/" + file.Name()
+			p.copyFile(srcPath, destPath)
 		}
 	}
 	// 复制html
-	list = Config.Htmls
+	list = conf.Conf.HTML.List
 	for i := 0; i < len(list); i++ {
 		srcPath := list[i]
-		destPath := Config.Publish.Dir + "/" + srcPath
-		copyFile(srcPath, destPath)
+		destPath := conf.Conf.Publish.Dir + "/" + srcPath
+		p.copyFile(srcPath, destPath)
 	}
-	// 复制模块
-	if len(Config.Modules) > 0 {
-		for _, m := range Config.Modules {
-			srcPath := Config.ModulesDir + "/" + m + "/" + m + ".min.js"
-			destPath := Config.Publish.Dir + "/" + Config.OutJsDir + "/modules/" + m + ".min.js"
-			copyFile(srcPath, destPath)
-			// 有可能有 web.min.js
-			webPath := Config.ModulesDir + "/" + m + "/" + m + ".web.min.js"
-			_, err := os.Stat(webPath)
-			if err == nil {
-				destPath2 := Config.Publish.Dir + "/" + Config.OutJsDir + "/modules/" + m + ".web.min.js"
-				copyFile(webPath, destPath2)
+	// 复制库文件
+	if len(conf.Conf.Libs) > 0 {
+		for _, item := range conf.Conf.Libs {
+			srcPath := GetMinJs(item)
+			// 检测是否有对应的min文件
+			if !CheckFileExists(srcPath) {
+				srcPath = item
 			}
+			destPath := conf.Conf.Publish.Dir + "/" + srcPath
+			p.copyFile(srcPath, destPath)
 		}
 	}
 }
 
 // 复制文件
-func copyFile(src string, dest string) {
+func (p *Publish) copyFile(src string, dest string) {
 	srcFile, err := os.Open(src)
 	if err != nil {
 		log.Printf("Copy file "+src+" error %v\n", err)
@@ -90,7 +99,7 @@ func copyFile(src string, dest string) {
 }
 
 // 压缩js
-func minifyJs(inputFile string, outFile string) bool {
+func (p *Publish) minifyJs(inputFile string, outFile string) bool {
 	m := minify.New()
 	m.AddFunc("text/javascript", js.Minify)
 	bytes, _ := ioutil.ReadFile(inputFile)
@@ -100,18 +109,24 @@ func minifyJs(inputFile string, outFile string) bool {
 		return false
 	}
 	ioutil.WriteFile(outFile, b, os.ModeAppend)
-	os.Remove(inputFile)
 	return true
 }
 
 // Publish 发布
-// @param datetime 是否在目录后面加上当前时间
-func Publish() {
+func (p *Publish) Publish() {
 	// 先删除文件
-	os.RemoveAll(Config.Publish.Dir)
-	copyFiles()
-	buildCommand(true)
-	buildHtmls(true)
-	var destJs = Config.Publish.Dir + "/" + Config.OutJsDir + "/" + Config.Publish.MinJs
-	minifyJs(SingleJs, destJs)
+	os.RemoveAll(conf.Conf.Publish.Dir)
+	p.copyFiles()
+	GBuild.Build2(true, true)
+	// 生成临时文件
+	srcPath := strconv.FormatInt(time.Now().UnixNano(), 10) + ".js"
+	// println(srcPath)
+	GBuild.genCmd(srcPath)
+	destJs := conf.Conf.Publish.Dir + "/" + GetMinJs(conf.Conf.OutJs)
+	p.minifyJs(srcPath, destJs)
+	// 删除临时文件
+	os.Remove(srcPath)
 }
+
+// GPublish Publish 单例
+var GPublish = &Publish{}

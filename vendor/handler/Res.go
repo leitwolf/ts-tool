@@ -1,9 +1,11 @@
-package lib
+package handler
 
-//
-// 处理资源文件，生成一个Res.ts的文件到src目录
-//
+/*
+资源处理相关
+*/
+
 import (
+	"conf"
 	"io/ioutil"
 	"log"
 	"os"
@@ -11,8 +13,9 @@ import (
 	"strings"
 )
 
-// 资源模板
-const template = `/**
+const (
+	// ResTemplate 资源模板
+	ResTemplate = `/**
  * DO NOT edit
  */
 class R {
@@ -21,25 +24,23 @@ class R {
     constructor() {
     }
 }`
+	lineTmpl = "    public static {{name}} : string = \"{{path}}\";\r\n"
+)
 
-// 每一行的模板
-const lineTmpl = "    public static {{name}} : string = \"{{path}}\";\r\n"
+// Res 资源处理
+type Res struct {
+}
 
-// 保存的位置
-const savePath = "src/R.ts"
-
-//
-// HandleImages 处理资源
+// Handle 处理资源
 // images/select/box2.png 名字为 select_box2
-//
-func HandleImages() {
-	if Config.ResourceDir == "" {
+func (r *Res) Handle() {
+	if conf.Conf.Res.Dir == "" || conf.Conf.Res.Path == "" {
 		return
 	}
-	path := Config.ResourceDir
+	resDir := conf.Conf.Res.Dir
 	content := ""
-	l := len(path)
-	err := filepath.Walk(path, func(path1 string, f os.FileInfo, err1 error) error {
+	l := len(resDir)
+	err := filepath.Walk(resDir, func(path1 string, f os.FileInfo, err1 error) error {
 		if f == nil {
 			return err1
 		}
@@ -68,6 +69,9 @@ func HandleImages() {
 		log.Printf("filepath.Walk() return %v\n", err)
 	}
 	// 生成
-	content = strings.Replace(template, "{{content}}", content, -1)
-	ioutil.WriteFile(savePath, ([]byte)(content), os.ModeAppend)
+	content = strings.Replace(ResTemplate, "{{content}}", content, -1)
+	ioutil.WriteFile(conf.Conf.Res.Path, ([]byte)(content), os.ModeAppend)
 }
+
+// GRes Res 单例
+var GRes = &Res{}
