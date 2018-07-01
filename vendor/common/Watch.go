@@ -201,8 +201,9 @@ func (w *Watch) Watch() {
 
 	// 监听的目录列表，包含子目录
 	list := []string{conf.Conf.SrcDir}
-	if conf.Conf.Res.Dir != "" {
-		list = append(list, conf.Conf.Res.Dir)
+	resDirs := conf.Conf.GetResDirs()
+	for i := 0; i < len(resDirs); i++ {
+		list = append(list, resDirs[i])
 	}
 	// log.Printf("%v\n", list)
 	var allList []string

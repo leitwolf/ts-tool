@@ -60,7 +60,8 @@ ts-tool -p
     "outJs": "js/main.js",
     "res": {
         "path": "src/R.ts",
-        "dir": "images"
+        "dir": "images",
+        "dirs":["images","sounds"]
     },
     "libs": [
         "js/libs/a.js",
@@ -90,6 +91,7 @@ ts-tool -p
 * `res` 资源处理相关参数,此功能是把资源文件列到src/R.ts里，以便程序调用，默认空
 * ----`path` 生成的ts文件路径，默认`src/R.ts`
 * ----`dir` 需要处理的目录
+* ----`dirs` 多个需要处理的目录
 * `libs` 引用第三方库列表
 * `html` 处理html文件相关参数
 * ----`libStartFlag` 第三方库起始标记，默认`<!--libs_start-->`

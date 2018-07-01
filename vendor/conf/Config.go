@@ -21,6 +21,8 @@ type ResConfig struct {
 	Path string `json:"path"`
 	// 资源文件夹，监听变化以便生成R.ts文件
 	Dir string `json:"dir"`
+	// 资源文件夹列表，优先
+	Dirs []string `json:"dirs"`
 }
 
 // HTMLConfig html文件相关的配置
@@ -63,6 +65,7 @@ func (c *Config) init() {
 	c.Res = ResConfig{
 		Path: "src/R.ts",
 		Dir:  "",
+		Dirs: []string{},
 	}
 	c.HTML = HTMLConfig{
 		LibStartFlag: "<!--libs_start-->",
@@ -100,6 +103,19 @@ func (c *Config) ReadConfig() bool {
 		return false
 	}
 	return true
+}
+
+// GetResDirs 获取资源文件夹列表
+func (c *Config) GetResDirs() []string {
+	if len(c.Res.Dirs) > 0 {
+		return c.Res.Dirs
+	} else {
+		strs := make([]string, 0)
+		if c.Res.Dir != "" {
+			strs = append(strs, c.Res.Dir)
+		}
+		return strs
+	}
 }
 
 // 去掉配置文件中的注释

@@ -9,6 +9,7 @@ import (
 func run() {
 	conf.InitConfig()
 	common.StartCmd()
+	// handler.GRes.Test()
 }
 
 func main() {
