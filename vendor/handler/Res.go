@@ -103,7 +103,7 @@ func (r *Res) handleDir(resDir string) string {
 
 // 处理sprite sheet文件，把里面的项目也要加到资源列表中
 func (r *Res) handleSheet(filename string) string {
-	log.Println("Parsing sprite sheet: " + filename)
+	// log.Println("Parsing sprite sheet: " + filename)
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Println("Read sheet file error:", err.Error())
