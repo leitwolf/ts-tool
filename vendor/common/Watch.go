@@ -157,7 +157,7 @@ func (w *Watch) handleWatch(event fsnotify.Event) {
 	if strings.Contains(path, conf.ConfigFilename) {
 		// 配置文件改变
 		w.needBuild = true
-	} else if conf.Conf.Res.Dir != "" && strings.HasPrefix(path, conf.Conf.Res.Dir) {
+	} else if w.checkResChanged(path) {
 		// 素材改变
 		w.needHandleRes = true
 	} else if event.Op&fsnotify.Create == fsnotify.Create {
@@ -169,6 +169,17 @@ func (w *Watch) handleWatch(event fsnotify.Event) {
 	} else if event.Op&fsnotify.Write == fsnotify.Write {
 		w.watchWrite(path)
 	}
+}
+
+// 检测是否需要更新资源
+func (w *Watch) checkResChanged(filename string) bool {
+	resDirs := conf.Conf.GetResDirs()
+	for i := 0; i < len(resDirs); i++ {
+		if strings.HasPrefix(filename, resDirs[i]) {
+			return true
+		}
+	}
+	return false
 }
 
 // Watch 开始监听

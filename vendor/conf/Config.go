@@ -14,6 +14,7 @@ import (
 
 // ConfigFilename 配置文件名
 var ConfigFilename = "ts-toolconfig.json"
+var resDirsCache []string
 
 // ResConfig 资源文件相关的配置
 type ResConfig struct {
@@ -86,6 +87,7 @@ func (c *Config) init() {
 
 // ReadConfig 读取配置文件
 func (c *Config) ReadConfig() bool {
+	resDirsCache = nil
 	data, err := ioutil.ReadFile(ConfigFilename)
 	if err != nil {
 		log.Println("Read config file error:", err.Error())
@@ -107,15 +109,18 @@ func (c *Config) ReadConfig() bool {
 
 // GetResDirs 获取资源文件夹列表
 func (c *Config) GetResDirs() []string {
-	if len(c.Res.Dirs) > 0 {
-		return c.Res.Dirs
-	} else {
-		strs := make([]string, 0)
-		if c.Res.Dir != "" {
-			strs = append(strs, c.Res.Dir)
-		}
-		return strs
+	if resDirsCache != nil {
+		return resDirsCache
 	}
+	if len(c.Res.Dirs) > 0 {
+		resDirsCache = c.Res.Dirs
+	} else {
+		resDirsCache = make([]string, 0)
+		if c.Res.Dir != "" {
+			resDirsCache = append(resDirsCache, c.Res.Dir)
+		}
+	}
+	return resDirsCache
 }
 
 // 去掉配置文件中的注释
