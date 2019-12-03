@@ -1,7 +1,7 @@
 package common
 
 import (
-	"conf"
+	"mo/conf"
 	"log"
 	"net"
 	"net/http"

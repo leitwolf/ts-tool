@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"conf"
+	"mo/conf"
 	"log"
 	"os/exec"
 	"strings"

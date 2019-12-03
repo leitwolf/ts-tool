@@ -1,8 +1,8 @@
 package main
 
 import (
-	"common"
-	"conf"
+	"mo/common"
+	"mo/conf"
 )
 
 // 运行

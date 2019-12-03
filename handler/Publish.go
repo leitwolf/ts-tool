@@ -5,20 +5,19 @@ package handler
 */
 
 import (
-	"conf"
 	"io"
 	"io/ioutil"
 	"log"
+	"mo/conf"
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
-	"strconv"
-
-	"github.com/tdewolff/minify"
-	"github.com/tdewolff/minify/js"
+	minify "github.com/tdewolff/minify/v2"
+	"github.com/tdewolff/minify/v2/js"
 )
 
 // Publish 发布模块
@@ -68,12 +67,16 @@ func (p *Publish) copyFiles() {
 	if len(conf.Conf.Libs) > 0 {
 		for _, item := range conf.Conf.Libs {
 			srcPath := GetMinJs(item)
-			// 检测是否有对应的min文件
-			if !CheckFileExists(srcPath) {
-				srcPath = item
-			}
 			destPath := conf.Conf.Publish.Dir + "/" + srcPath
-			p.copyFile(srcPath, destPath)
+			// 检测是否有对应的min文件，有则复制，没有则压缩并移到目标目录
+			if !CheckFileExists(srcPath) {
+				success := p.minifyJs(item, destPath)
+				if !success {
+					p.copyFile(item, destPath)
+				}
+			} else {
+				p.copyFile(srcPath, destPath)
+			}
 		}
 	}
 }
@@ -108,6 +111,7 @@ func (p *Publish) minifyJs(inputFile string, outFile string) bool {
 		log.Printf("[minify error]%v", err)
 		return false
 	}
+	os.MkdirAll(path.Dir(outFile), 0777)
 	ioutil.WriteFile(outFile, b, os.ModeAppend)
 	return true
 }

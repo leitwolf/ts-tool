@@ -23,6 +23,3 @@ _testmain.go
 *.test
 *.prof
 .vscode
-
-vendor/github.com/*
-vendor/golang.org/*

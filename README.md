@@ -2,7 +2,7 @@
 Typescript项目开发工具
 
 # go版本
-1.6以上
+1.13以上
 
 # 依赖
 * github.com/fsnotify/fsnotify

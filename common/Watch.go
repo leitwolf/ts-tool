@@ -5,9 +5,9 @@ package common
 */
 
 import (
-	"conf"
-	"handler"
 	"log"
+	"mo/conf"
+	"mo/handler"
 	"os"
 	"path/filepath"
 	"strings"
