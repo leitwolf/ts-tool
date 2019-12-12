@@ -19,7 +19,7 @@ import (
 // GetMinJs 获取min.js版本路径
 func GetMinJs(jsPath string) string {
 	l := len(jsPath)
-	if l > 3 && jsPath[l-3:] == ".js" {
+	if !strings.HasSuffix(jsPath, ".min.js") && strings.HasSuffix(jsPath, ".js") {
 		return jsPath[0:l-3] + ".min.js"
 	}
 	return jsPath
